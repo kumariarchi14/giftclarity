@@ -13,15 +13,15 @@ export default function GiftPage() {
           <PhoneScreen>
             <PhoneHeader className="pb-2">
               <div className="flex justify-center">
-                <Logo size="page" href={undefined} className="max-h-[38px]" />
+                <Logo size="page" href={undefined} className="max-h-[32px]" />
               </div>
-              <Link href="/" className="mt-1 inline-flex items-center gap-2 text-[12px] text-[color:var(--muted)]">
-                <ChevronLeft className="h-4 w-4" />
+              <Link href="/" className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-[color:var(--muted)]">
+                <ChevronLeft className="h-3.5 w-3.5" />
                 Previous page
               </Link>
             </PhoneHeader>
-            <PhoneBody className="pb-3">
-              <Suspense fallback={<div className="text-[12px] text-[color:var(--muted)]">Loading...</div>}>
+            <PhoneBody className="pb-2">
+              <Suspense fallback={<div className="text-[11px] text-[color:var(--muted)]">Loading...</div>}>
                 <GiftFlow />
               </Suspense>
             </PhoneBody>

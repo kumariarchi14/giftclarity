@@ -10,8 +10,8 @@ type LogoProps = {
 };
 
 export function Logo({ href = "/", size = "page", className }: LogoProps) {
-  const width = size === "hero" ? 280 : 210;
-  const height = size === "hero" ? 78 : 58;
+  const width = size === "hero" ? 260 : 186;
+  const height = size === "hero" ? 72 : 52;
 
   const image = (
     <Image
@@ -20,7 +20,7 @@ export function Logo({ href = "/", size = "page", className }: LogoProps) {
       width={width}
       height={height}
       priority
-      className={clsx("h-auto w-auto max-w-full", size === "hero" ? "max-h-[58px]" : "max-h-[42px]", className)}
+      className={clsx("h-auto w-auto max-w-full", size === "hero" ? "max-h-[52px]" : "max-h-[36px]", className)}
     />
   );
 

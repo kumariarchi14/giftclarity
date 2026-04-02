@@ -10,9 +10,10 @@ type RequestBody = {
 
 function buildPrompt(inputs: GiftFormData, tone: TonePreference, angle: number) {
   return `You are GiftClarity, an intelligent gifting decision assistant.
-Return JSON only with keys: direction, exampleIdeas, whyThisWorks, confidencePrompt, confidenceScore, reassurance.
+Return JSON only with keys: direction, exampleIdeas, giftItems, whyThisWorks, confidencePrompt, confidenceScore, reassurance.
 Avoid marketplaces, stores, brands, discounts, and generic top-10 framing.
 Prefer emotional fit and recipient understanding over shopping behavior.
+Assume the user is in India unless the inputs clearly suggest otherwise.
 
 Tone lens: ${tone}
 Alternative angle number: ${angle}
@@ -30,6 +31,12 @@ Requirements:
 - direction should describe a category or direction, not a specific store item
 - direction should be one strong headline-length statement
 - exampleIdeas should contain exactly 2-3 concise examples
+- giftItems should contain exactly 2-3 objects with keys: title, description, whySuggested, tag
+- each giftItems.title should be an exact item name like "Engraved water bottle" or "Hardcover weekly planner", not a broad category
+- prefer items that feel realistic and relevant for Indian customers, gifting occasions, and common budgets
+- each giftItems.description should be 1-2 short sentences
+- each giftItems.whySuggested should be one short sentence tied to recipient context
+- each giftItems.tag should be a short label like "Personal", "Useful", "Meaningful", or "Creative"
 - whyThisWorks should be an array of exactly 3 short bullets
 - confidencePrompt should be one short sentence that helps the user assess whether it feels right
 - confidenceScore should be an integer 0-100

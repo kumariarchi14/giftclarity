@@ -8,7 +8,7 @@ export function Shell({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={clsx("mx-auto w-full max-w-6xl px-4 sm:px-6", className)}>{children}</div>;
+  return <div className={clsx("mx-auto flex w-full max-w-7xl justify-center px-2 sm:px-4 lg:px-8", className)}>{children}</div>;
 }
 
 export function Card({
@@ -62,18 +62,21 @@ export function PhoneFrame({
   className?: string;
 }) {
   return (
-    <div className="mx-auto w-fit">
+    <div className="mx-auto flex w-full justify-center">
       <div
         style={{
-          width: "7.31cm",
-          height: "16.07cm"
+          width: "min(calc(100vw - 1rem), calc((100dvh - 1rem) * 731 / 1607), 92vw)",
+          aspectRatio: "731 / 1607",
+          minWidth: "280px",
+          maxWidth: "560px",
+          maxHeight: "calc(100dvh - 1rem)"
         }}
         className={clsx(
-          "card overflow-hidden rounded-[32px] border border-white/60 p-1.5 shadow-[0_20px_52px_rgba(44,34,23,0.12)]",
+          "card overflow-hidden rounded-[24px] border border-white/60 p-1 shadow-[0_18px_42px_rgba(44,34,23,0.12)] sm:rounded-[28px] sm:p-1.5 lg:rounded-[32px]",
           className
         )}
       >
-        <div className="flex h-full min-h-0 flex-col rounded-[25px] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,241,233,0.94))]">
+        <div className="flex h-full min-h-0 flex-col rounded-[20px] bg-[linear-gradient(180deg,rgba(255,252,247,0.98),rgba(247,241,233,0.94))] sm:rounded-[22px] lg:rounded-[25px]">
           {children}
         </div>
       </div>
@@ -98,7 +101,7 @@ export function PhoneHeader({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={clsx("shrink-0 px-2.5 pb-1.5 pt-2.5", className)}>{children}</div>;
+  return <div className={clsx("shrink-0 px-2.5 pb-1.5 pt-2.5 sm:px-3 sm:pb-2 sm:pt-3", className)}>{children}</div>;
 }
 
 export function PhoneBody({
@@ -113,7 +116,7 @@ export function PhoneBody({
   return (
     <div
       className={clsx(
-        "min-h-0 flex-1 px-2.5",
+        "min-h-0 flex-1 px-2.5 sm:px-3",
         scroll ? "overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "",
         className
       )}
@@ -130,5 +133,5 @@ export function PhoneFooter({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={clsx("shrink-0 px-2.5 pb-2.5 pt-1.5", className)}>{children}</div>;
+  return <div className={clsx("shrink-0 px-2.5 pb-2.5 pt-1.5 sm:px-3 sm:pb-3 sm:pt-2", className)}>{children}</div>;
 }

@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronLeft, Copy, Download } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Card, PhoneBody, PhoneFooter, PhoneFrame, PhoneHeader, PhoneScreen, SectionLabel, Shell } from "@/components/ui";
+import { getGiftItemImageSrc } from "@/lib/gift-item-visual";
 import { normalizeGiftResult } from "@/lib/result-utils";
 import { loadSession } from "@/lib/storage";
 import type { GiftSession } from "@/lib/types";
@@ -132,10 +134,18 @@ export default function SummaryPage() {
                     <div className="mt-2 space-y-1.5">
                       {session.result.giftItems.slice(0, 3).map((item) => (
                         <div key={item.title} className="rounded-[12px] border border-[color:var(--border)] bg-[var(--surface-strong)] p-2">
+                          <Image
+                            src={getGiftItemImageSrc(item.title)}
+                            alt={item.title}
+                            width={320}
+                            height={220}
+                            className="h-20 w-full rounded-[10px] object-cover"
+                            unoptimized
+                          />
                           <div className="flex items-start justify-between gap-2">
-                            <div className="text-[11px] font-medium leading-4">{item.title}</div>
+                            <div className="mt-1.5 text-[11px] font-medium leading-4">{item.title}</div>
                             {item.tag ? (
-                              <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--accent)]">
+                              <span className="mt-1.5 rounded-full bg-white px-1.5 py-0.5 text-[9px] font-medium text-[color:var(--accent)]">
                                 {item.tag}
                               </span>
                             ) : null}

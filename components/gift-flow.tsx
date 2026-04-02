@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -13,6 +14,7 @@ import {
   relationshipOptions
 } from "@/lib/data";
 import { generateGiftRecommendation } from "@/lib/ai";
+import { getGiftItemImageSrc } from "@/lib/gift-item-visual";
 import { normalizeGiftResult } from "@/lib/result-utils";
 import { clearSession, loadSession, saveSession } from "@/lib/storage";
 import type { GiftFormData, GiftResult, GiftSession, TonePreference } from "@/lib/types";
@@ -54,10 +56,20 @@ function ResultCard({ result }: { result: GiftResult }) {
         <div className="grid gap-2">
           {result.giftItems.slice(0, 3).map((item) => (
             <div key={item.title} className="rounded-[14px] border border-[color:var(--border)] bg-white/85 p-2.5">
+              <div className="overflow-hidden rounded-[12px] border border-[color:var(--border)] bg-[var(--surface-strong)]">
+                <Image
+                  src={getGiftItemImageSrc(item.title)}
+                  alt={item.title}
+                  width={320}
+                  height={220}
+                  className="h-24 w-full object-cover"
+                  unoptimized
+                />
+              </div>
               <div className="flex items-start justify-between gap-2">
-                <h3 className="text-[12px] font-semibold leading-4 text-[color:var(--foreground)]">{item.title}</h3>
+                <h3 className="mt-2 text-[12px] font-semibold leading-4 text-[color:var(--foreground)]">{item.title}</h3>
                 {item.tag ? (
-                  <span className="rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[9px] font-medium text-[color:var(--accent)]">
+                  <span className="mt-2 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[9px] font-medium text-[color:var(--accent)]">
                     {item.tag}
                   </span>
                 ) : null}
@@ -115,8 +127,20 @@ function SummaryBlock({
         <div className="space-y-1.5">
           {result.giftItems.slice(0, 3).map((item) => (
             <div key={item.title} className="rounded-[12px] border border-[color:var(--border)] bg-white/80 p-2">
-              <div className="text-[11px] font-medium leading-4">{item.title}</div>
-              <div className="mt-1 text-[10px] leading-4 text-[color:var(--muted)]">{item.whySuggested}</div>
+              <div className="flex gap-2">
+                <Image
+                  src={getGiftItemImageSrc(item.title)}
+                  alt={item.title}
+                  width={84}
+                  height={64}
+                  className="h-14 w-16 rounded-[10px] object-cover"
+                  unoptimized
+                />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium leading-4">{item.title}</div>
+                  <div className="mt-1 text-[10px] leading-4 text-[color:var(--muted)]">{item.whySuggested}</div>
+                </div>
+              </div>
             </div>
           ))}
         </div>

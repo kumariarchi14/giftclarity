@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -13,6 +14,8 @@ import {
   relationshipOptions
 } from "@/lib/data";
 import { generateGiftRecommendation } from "@/lib/ai";
+import { getGiftItemImageSrc } from "@/lib/gift-item-visual";
+import { normalizeGiftResult } from "@/lib/result-utils";
 import { clearSession, loadSession, saveSession } from "@/lib/storage";
 import type { GiftFormData, GiftResult, GiftSession, TonePreference } from "@/lib/types";
 
@@ -37,23 +40,44 @@ function prettyValue(value: string) {
 }
 
 function FieldLabel({ label }: { label: string }) {
-  return <label className="text-[12px] font-medium text-[color:var(--foreground)]">{label}</label>;
+  return <label className="text-[11px] font-medium text-[color:var(--foreground)]">{label}</label>;
 }
 
 function ResultCard({ result }: { result: GiftResult }) {
   return (
-    <div className="space-y-2.5 rounded-[20px] bg-[var(--surface-strong)] p-3">
+    <div className="space-y-2 rounded-[18px] bg-[var(--surface-strong)] p-2.5">
       <div>
         <SectionLabel>Gift direction</SectionLabel>
-        <h2 className="text-[18px] font-semibold leading-6 tracking-tight">{result.direction}</h2>
+        <h2 className="text-[16px] font-semibold leading-5 tracking-tight">{result.direction}</h2>
       </div>
 
       <div>
-        <SectionLabel>Example ideas</SectionLabel>
+        <SectionLabel>Suggested items</SectionLabel>
         <div className="grid gap-2">
-          {result.exampleIdeas.slice(0, 3).map((idea) => (
-            <div key={idea} className="rounded-[14px] border border-[color:var(--border)] bg-white/80 px-3 py-2 text-[12px]">
-              {idea}
+          {result.giftItems.slice(0, 3).map((item) => (
+            <div key={item.title} className="rounded-[14px] border border-[color:var(--border)] bg-white/85 p-2.5">
+              <div className="overflow-hidden rounded-[12px] border border-[color:var(--border)] bg-[var(--surface-strong)]">
+                <Image
+                  src={getGiftItemImageSrc(item.title)}
+                  alt={item.title}
+                  width={320}
+                  height={220}
+                  className="h-24 w-full object-cover"
+                  unoptimized
+                />
+              </div>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="mt-2 text-[12px] font-semibold leading-4 text-[color:var(--foreground)]">{item.title}</h3>
+                {item.tag ? (
+                  <span className="mt-2 rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[9px] font-medium text-[color:var(--accent)]">
+                    {item.tag}
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-1 text-[10px] leading-4 text-[color:var(--muted)]">{item.description}</p>
+              <div className="mt-1.5 rounded-[10px] bg-[var(--surface-strong)] px-2 py-1 text-[10px] leading-4 text-[color:var(--foreground)]">
+                Why suggested: {item.whySuggested}
+              </div>
             </div>
           ))}
         </div>
@@ -61,14 +85,14 @@ function ResultCard({ result }: { result: GiftResult }) {
 
       <div>
         <SectionLabel>Why this works</SectionLabel>
-        <ul className="space-y-1 text-[12px] leading-5 text-[color:var(--muted)]">
+        <ul className="space-y-1 text-[11px] leading-4 text-[color:var(--muted)]">
           {result.whyThisWorks.slice(0, 3).map((bullet) => (
             <li key={bullet}>- {bullet}</li>
           ))}
         </ul>
       </div>
 
-      <div className="rounded-[14px] bg-[var(--accent-soft)] p-2.5 text-[12px] text-[color:var(--muted)]">
+      <div className="rounded-[12px] bg-[var(--accent-soft)] p-2 text-[11px] leading-4 text-[color:var(--muted)]">
         <span className="font-medium text-[color:var(--foreground)]">Confidence check:</span> {result.reassurance}
       </div>
     </div>
@@ -85,38 +109,53 @@ function SummaryBlock({
   feelsRight: boolean;
 }) {
   return (
-    <div className="space-y-2.5 rounded-[20px] bg-[var(--surface-strong)] p-3">
+    <div className="space-y-2 rounded-[18px] bg-[var(--surface-strong)] p-2.5">
       <div>
         <SectionLabel>Recipient snapshot</SectionLabel>
-        <p className="text-[12px] leading-5 text-[color:var(--muted)]">
+        <p className="text-[11px] leading-4 text-[color:var(--muted)]">
           {prettyValue(form.relationship)} | {prettyValue(form.occasion)} | {form.expression}
         </p>
       </div>
 
       <div>
         <SectionLabel>Final gift direction</SectionLabel>
-        <h3 className="text-[17px] font-semibold leading-6">{result.direction}</h3>
+        <h3 className="text-[15px] font-semibold leading-5">{result.direction}</h3>
       </div>
 
       <div>
-        <SectionLabel>Example ideas</SectionLabel>
-        <ul className="space-y-1 text-[12px] leading-5">
-          {result.exampleIdeas.slice(0, 3).map((idea) => (
-            <li key={idea}>- {idea}</li>
+        <SectionLabel>Suggested items</SectionLabel>
+        <div className="space-y-1.5">
+          {result.giftItems.slice(0, 3).map((item) => (
+            <div key={item.title} className="rounded-[12px] border border-[color:var(--border)] bg-white/80 p-2">
+              <div className="flex gap-2">
+                <Image
+                  src={getGiftItemImageSrc(item.title)}
+                  alt={item.title}
+                  width={84}
+                  height={64}
+                  className="h-14 w-16 rounded-[10px] object-cover"
+                  unoptimized
+                />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium leading-4">{item.title}</div>
+                  <div className="mt-1 text-[10px] leading-4 text-[color:var(--muted)]">{item.whySuggested}</div>
+                </div>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       <div>
         <SectionLabel>Why this works</SectionLabel>
-        <ul className="space-y-1 text-[12px] leading-5 text-[color:var(--muted)]">
+        <ul className="space-y-1 text-[11px] leading-4 text-[color:var(--muted)]">
           {result.whyThisWorks.slice(0, 3).map((bullet) => (
             <li key={bullet}>- {bullet}</li>
           ))}
         </ul>
       </div>
 
-      <div className="rounded-[14px] border border-[color:var(--border)] p-2.5 text-[12px] text-[color:var(--muted)]">
+      <div className="rounded-[12px] border border-[color:var(--border)] p-2 text-[11px] leading-4 text-[color:var(--muted)]">
         {feelsRight ? "Marked as a strong fit." : "You can still refine before finalizing."}
       </div>
     </div>
@@ -146,9 +185,15 @@ export function GiftFlow() {
       return;
     }
 
+    const normalizedResult = normalizeGiftResult(session.result);
+    if (!normalizedResult) {
+      clearSession();
+      return;
+    }
+
     setForm(session.inputs);
     setTone(session.tone);
-    setResult(session.result);
+    setResult(normalizedResult);
     setAlternativeCount(session.alternativeCount);
     setStep(3);
   }, [searchParams]);
@@ -221,8 +266,12 @@ export function GiftFlow() {
       "",
       `Gift Direction: ${result.direction}`,
       "",
-      "Example Ideas:",
-      ...result.exampleIdeas.slice(0, 3).map((idea) => `- ${idea}`),
+      "Suggested Items:",
+      ...result.giftItems.slice(0, 3).flatMap((item) => [
+        `- ${item.title}`,
+        `  ${item.description}`,
+        `  Why suggested: ${item.whySuggested}`
+      ]),
       "",
       "Why This Works:",
       ...result.whyThisWorks.slice(0, 3).map((bullet) => `- ${bullet}`),
@@ -248,11 +297,11 @@ export function GiftFlow() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] border border-[color:var(--border)] bg-white/70">
-      <div className="shrink-0 space-y-2 px-3 pb-2 pt-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[22px] border border-[color:var(--border)] bg-white/70">
+      <div className="shrink-0 space-y-1.5 px-2.5 pb-1.5 pt-2.5">
         <div>
           <SectionLabel>{stepNames[step - 1]}</SectionLabel>
-          <h1 className="text-[19px] font-semibold leading-6 tracking-tight">
+          <h1 className="text-[17px] font-semibold leading-5 tracking-tight">
             {step === 1 && "Who is this gift for?"}
             {step === 2 && "Add the context that matters."}
             {step === 3 && "Here is your gift direction."}
@@ -264,18 +313,18 @@ export function GiftFlow() {
           {stepNames.map((name, index) => (
             <div key={name} className="min-w-0 flex-1">
               <div className={`h-1 rounded-full ${index < step ? "bg-[var(--accent)]" : "bg-white/90"}`} />
-              <div className="mt-0.5 truncate text-[10px] text-[color:var(--muted)]">{name}</div>
+              <div className="mt-0.5 truncate text-[9px] text-[color:var(--muted)]">{name}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {step === 1 && (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <div>
               <FieldLabel label="Recipient relationship" />
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {relationshipOptions.map((item) => (
                   <PillButton key={item} active={form.relationship === item} onClick={() => update("relationship", item)}>
                     {prettyValue(item)}
@@ -286,7 +335,7 @@ export function GiftFlow() {
 
             <div>
               <FieldLabel label="Occasion" />
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {occasionOptions.map((item) => (
                   <PillButton key={item} active={form.occasion === item} onClick={() => update("occasion", item)}>
                     {prettyValue(item)}
@@ -297,7 +346,7 @@ export function GiftFlow() {
 
             <div>
               <FieldLabel label="Personality signals" />
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {personalityOptions.map((item) => (
                   <PillButton key={item} active={form.traits.includes(item)} onClick={() => toggleTrait(item)}>
                     {prettyValue(item)}
@@ -306,18 +355,18 @@ export function GiftFlow() {
               </div>
             </div>
 
-            <details className="rounded-[18px] border border-[color:var(--border)] bg-white/60 px-4 py-3">
-              <summary className="cursor-pointer text-[12px] text-[color:var(--muted)]">Try a demo setup</summary>
-              <div className="mt-3 grid gap-2">
+            <details className="rounded-[16px] border border-[color:var(--border)] bg-white/60 px-3 py-2.5">
+              <summary className="cursor-pointer text-[11px] text-[color:var(--muted)]">Try a demo setup</summary>
+              <div className="mt-2 grid gap-1.5">
                 {demoScenarios.slice(0, 2).map((scenario, index) => (
                   <button
                     key={scenario.label}
                     type="button"
                     onClick={() => loadDemo(index)}
-                    className="rounded-[16px] border border-[color:var(--border)] bg-white/70 px-4 py-3 text-left"
+                    className="rounded-[14px] border border-[color:var(--border)] bg-white/70 px-3 py-2 text-left"
                   >
-                    <div className="text-[12px] font-medium">{scenario.label}</div>
-                    <div className="mt-1 text-[11px] text-[color:var(--muted)]">
+                    <div className="text-[11px] font-medium">{scenario.label}</div>
+                    <div className="mt-0.5 text-[10px] text-[color:var(--muted)]">
                       {scenario.value.relationship}, {scenario.value.occasion}
                     </div>
                   </button>
@@ -328,25 +377,25 @@ export function GiftFlow() {
         )}
 
         {step === 2 && (
-          <div className="space-y-3">
-            <div className="rounded-[16px] border border-[color:var(--border)] bg-white/70 px-3 py-2.5 text-[12px] text-[color:var(--muted)]">
+          <div className="space-y-2.5">
+            <div className="rounded-[14px] border border-[color:var(--border)] bg-white/70 px-2.5 py-2 text-[11px] leading-4 text-[color:var(--muted)]">
               {prettyValue(form.relationship)} | {prettyValue(form.occasion)}
             </div>
 
             <div>
               <FieldLabel label="Interests, tastes, or category cues" />
               <textarea
-                className="mt-2 min-h-20 w-full rounded-[18px] border border-[color:var(--border)] bg-white/80 px-4 py-3 outline-none placeholder:text-[color:var(--muted)]"
+                className="mt-1.5 min-h-16 w-full rounded-[16px] border border-[color:var(--border)] bg-white/80 px-3 py-2 outline-none placeholder:text-[color:var(--muted)]"
                 placeholder="Wellness, coffee rituals, travel gear, sketching..."
                 value={form.interests}
                 onChange={(event) => update("interests", event.target.value)}
-                style={{ fontSize: "12px", lineHeight: "1.25rem" }}
+                style={{ fontSize: "11px", lineHeight: "1rem" }}
               />
             </div>
 
             <div>
               <FieldLabel label="What should the gift express?" />
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {expressionOptions.map((item) => (
                   <PillButton key={item} active={form.expression === item} onClick={() => update("expression", item)}>
                     {prettyValue(item)}
@@ -358,21 +407,21 @@ export function GiftFlow() {
             <div>
               <FieldLabel label="Anything else?" />
               <textarea
-                className="mt-2 min-h-20 w-full rounded-[18px] border border-[color:var(--border)] bg-white/80 px-4 py-3 outline-none placeholder:text-[color:var(--muted)]"
+                className="mt-1.5 min-h-16 w-full rounded-[16px] border border-[color:var(--border)] bg-white/80 px-3 py-2 outline-none placeholder:text-[color:var(--muted)]"
                 placeholder="One detail that would make the gift feel right."
                 value={form.context}
                 onChange={(event) => update("context", event.target.value)}
-                style={{ fontSize: "12px", lineHeight: "1.25rem" }}
+                style={{ fontSize: "11px", lineHeight: "1rem" }}
               />
             </div>
 
-            <details className="rounded-[18px] border border-[color:var(--border)] bg-white/60 px-4 py-3">
-              <summary className="cursor-pointer text-[12px] text-[color:var(--muted)]">Optional preferences</summary>
-              <div className="mt-3 space-y-3">
+            <details className="rounded-[16px] border border-[color:var(--border)] bg-white/60 px-3 py-2.5">
+              <summary className="cursor-pointer text-[11px] text-[color:var(--muted)]">Optional preferences</summary>
+              <div className="mt-2 space-y-2">
                 <div>
                   <FieldLabel label="Budget range" />
                   <input
-                    className="mt-2 w-full rounded-[16px] border border-[color:var(--border)] bg-white/80 px-4 py-3 outline-none placeholder:text-[color:var(--muted)]"
+                    className="mt-1.5 w-full rounded-[14px] border border-[color:var(--border)] bg-white/80 px-3 py-2 text-[11px] outline-none placeholder:text-[color:var(--muted)]"
                     placeholder="Example: $30-$75"
                     value={form.budget}
                     onChange={(event) => update("budget", event.target.value)}
@@ -381,7 +430,7 @@ export function GiftFlow() {
 
                 <div>
                   <FieldLabel label="Direction lens" />
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {(["balanced", "sentimental", "practical"] as TonePreference[]).map((item) => (
                       <PillButton key={item} active={tone === item} onClick={() => setTone(item)}>
                         {prettyValue(item)}
@@ -395,14 +444,14 @@ export function GiftFlow() {
         )}
 
         {step === 3 && result && (
-          <div className="space-y-2.5">
-            <div className="rounded-[14px] border border-[color:var(--border)] bg-white/70 px-3 py-2 text-[12px] text-[color:var(--muted)]">
+          <div className="space-y-2">
+            <div className="rounded-[12px] border border-[color:var(--border)] bg-white/70 px-2.5 py-1.5 text-[11px] leading-4 text-[color:var(--muted)]">
               {prettyValue(form.relationship)} | {prettyValue(form.occasion)} | {form.traits.join(", ")}
             </div>
             <ResultCard result={result} />
-            <div className="rounded-[18px] border border-[color:var(--border)] bg-white/75 p-3">
+            <div className="rounded-[16px] border border-[color:var(--border)] bg-white/75 p-2.5">
               <FieldLabel label="Confidence check" />
-              <p className="mt-1 text-[12px] leading-5 text-[color:var(--muted)]">{result.confidencePrompt}</p>
+              <p className="mt-1 text-[11px] leading-4 text-[color:var(--muted)]">{result.confidencePrompt}</p>
             </div>
           </div>
         )}
@@ -414,34 +463,34 @@ export function GiftFlow() {
         )}
       </div>
 
-      <div className="shrink-0 border-t border-[color:var(--border)] bg-white/75 px-3 pb-3 pt-2.5">
+      <div className="shrink-0 border-t border-[color:var(--border)] bg-white/75 px-2.5 pb-2.5 pt-2">
         {step === 1 && (
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-2.5">
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] px-3 py-1.5 text-[12px] text-[color:var(--muted)]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--border)] px-2.5 py-1.5 text-[11px] text-[color:var(--muted)]"
               onClick={() => loadDemo(0)}
             >
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5" />
               Use demo
             </button>
             <button
               type="button"
               disabled={!canContinueFirstStep}
               onClick={() => setStep(2)}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-[12px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-[11px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               Continue
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
 
         {step === 2 && (
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-2.5">
             <button
               type="button"
-              className="rounded-full border border-[color:var(--border)] px-3 py-1.5 text-[12px]"
+              className="rounded-full border border-[color:var(--border)] px-2.5 py-1.5 text-[11px]"
               onClick={() => setStep(1)}
             >
               Back
@@ -450,9 +499,9 @@ export function GiftFlow() {
               type="button"
               disabled={!canGenerate || loading}
               onClick={() => handleGenerate()}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-[12px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-[11px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <HeartHandshake className="h-4 w-4" />}
+              {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <HeartHandshake className="h-3.5 w-3.5" />}
               Get direction
             </button>
           </div>
@@ -466,15 +515,15 @@ export function GiftFlow() {
                 setFeelsRight(true);
                 setStep(4);
               }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-[12px] font-medium text-white"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-[11px] font-medium text-white"
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-3.5 w-3.5" />
               This feels right
             </button>
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="w-full rounded-full border border-[color:var(--border)] px-3 py-2 text-[12px]"
+              className="w-full rounded-full border border-[color:var(--border)] px-2.5 py-1.5 text-[11px]"
             >
               Refine
             </button>
@@ -486,23 +535,23 @@ export function GiftFlow() {
             <button
               type="button"
               onClick={handleCopy}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-[12px] font-medium text-white"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--accent)] px-3.5 py-2 text-[11px] font-medium text-white"
             >
-              <Copy className="h-4 w-4" />
+              <Copy className="h-3.5 w-3.5" />
               {copied ? "Copied" : "Copy summary"}
             </button>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleDownload}
-                className="flex-1 rounded-full border border-[color:var(--border)] px-3 py-2 text-[12px]"
+                className="flex-1 rounded-full border border-[color:var(--border)] px-2.5 py-1.5 text-[11px]"
               >
-                <span className="inline-flex items-center gap-2">
-                  <Download className="h-4 w-4" />
+                <span className="inline-flex items-center gap-1.5">
+                  <Download className="h-3.5 w-3.5" />
                   Download
                 </span>
               </button>
-              <Link href="/summary" className="flex-1 rounded-full border border-[color:var(--border)] px-3 py-2 text-center text-[12px]">
+              <Link href="/summary" className="flex-1 rounded-full border border-[color:var(--border)] px-2.5 py-1.5 text-center text-[11px]">
                 Open page
               </Link>
             </div>

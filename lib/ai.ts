@@ -1,4 +1,5 @@
 import { generateMockGiftResult } from "@/lib/mock-ai";
+import { normalizeGiftResult } from "@/lib/result-utils";
 import type { GiftFormData, GiftResult, TonePreference } from "@/lib/types";
 
 type GenerateParams = {
@@ -29,18 +30,9 @@ export async function generateGiftRecommendation({
       return generateMockGiftResult(inputs, tone, angle);
     }
 
-    const result = (await response.json()) as GiftResult;
+    const result = normalizeGiftResult((await response.json()) as GiftResult);
 
-    if (
-      !result?.direction ||
-      !Array.isArray(result?.exampleIdeas) ||
-      result.exampleIdeas.length < 2 ||
-      result.exampleIdeas.length > 3 ||
-      !Array.isArray(result?.whyThisWorks) ||
-      result.whyThisWorks.length !== 3 ||
-      !result?.confidencePrompt ||
-      !result?.reassurance
-    ) {
+    if (!result) {
       return generateMockGiftResult(inputs, tone, angle);
     }
 

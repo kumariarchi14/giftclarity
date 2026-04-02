@@ -13,6 +13,12 @@ export type GiftFormData = {
 export type GiftResult = {
   direction: string;
   exampleIdeas: string[];
+  giftItems: {
+    title: string;
+    description: string;
+    whySuggested: string;
+    tag?: string;
+  }[];
   whyThisWorks: string[];
   confidencePrompt: string;
   confidenceScore: number;

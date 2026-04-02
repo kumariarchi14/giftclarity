@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ChevronLeft } from "lucide-react";
 import { GiftFlow } from "@/components/gift-flow";
 import { Logo } from "@/components/logo";
@@ -12,7 +13,7 @@ export default function GiftPage() {
           <PhoneScreen>
             <PhoneHeader className="pb-2">
               <div className="flex justify-center">
-              <Logo size="page" href={undefined} className="max-h-[38px]" />
+                <Logo size="page" href={undefined} className="max-h-[38px]" />
               </div>
               <Link href="/" className="mt-1 inline-flex items-center gap-2 text-[12px] text-[color:var(--muted)]">
                 <ChevronLeft className="h-4 w-4" />
@@ -20,7 +21,9 @@ export default function GiftPage() {
               </Link>
             </PhoneHeader>
             <PhoneBody className="pb-3">
-              <GiftFlow />
+              <Suspense fallback={<div className="text-[12px] text-[color:var(--muted)]">Loading...</div>}>
+                <GiftFlow />
+              </Suspense>
             </PhoneBody>
           </PhoneScreen>
         </PhoneFrame>

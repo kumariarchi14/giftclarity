@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Route } from "next";
 import clsx from "clsx";
 
 type LogoProps = {
-  href?: string;
+  href?: Route;
   size?: "hero" | "page";
   className?: string;
 };
